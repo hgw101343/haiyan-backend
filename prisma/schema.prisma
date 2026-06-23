@@ -1,0 +1,90 @@
+// Prisma schema — SQLite (开发阶段)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  openid     String   @unique
+  nickname   String?
+  avatar     String?
+  phone      String?
+  role         String   @default("USER")
+  passwordHash String?  @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  orders     Order[]
+
+  @@map("users")
+}
+
+model Category {
+  id        Int      @id @default(autoincrement())
+  name      String
+  icon      String?
+  sort      Int      @default(0)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  dishes    Dish[]
+
+  @@map("categories")
+}
+
+model Dish {
+  id          Int         @id @default(autoincrement())
+  name        String
+  description String?
+  price       Float
+  image       String?
+  categoryId  Int         @map("category_id")
+  category    Category    @relation(fields: [categoryId], references: [id])
+  stock       Int         @default(999)
+  sales       Int         @default(0)
+  isActive    Boolean     @default(true) @map("is_active")
+  isFeatured     Boolean     @default(false) @map("is_featured")
+  isRecommended   Boolean     @default(false) @map("is_recommended")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  orderItems  OrderItem[]
+
+  @@map("dishes")
+}
+
+model Order {
+  id            Int      @id @default(autoincrement())
+  orderNo       String   @unique @map("order_no")
+  userId        Int      @map("user_id")
+  user          User     @relation(fields: [userId], references: [id])
+  totalAmount   Float    @map("total_amount")
+  status        String   @default("PENDING")
+  remark        String?
+  tableNo       String?  @map("table_no")
+  prepayId      String?  @map("prepay_id")
+  transactionId String?  @map("transaction_id")
+  paidAt        DateTime? @map("paid_at")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  items         OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id       Int     @id @default(autoincrement())
+  orderId  Int     @map("order_id")
+  order    Order   @relation(fields: [orderId], references: [id])
+  dishId   Int     @map("dish_id")
+  dish     Dish    @relation(fields: [dishId], references: [id])
+  quantity Int
+  price    Float
+  remark   String?
+
+  @@map("order_items")
+}
