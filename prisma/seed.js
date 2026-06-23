@@ -14,6 +14,7 @@ async function main() {
   await prisma.dish.deleteMany()
   await prisma.category.deleteMany()
   await prisma.user.deleteMany()
+  await prisma.systemConfig.deleteMany()
 
   console.log('开始填充初始数据...')
 

@@ -45,6 +45,7 @@ app.use('/api/orders', require('./routes/orders'))
 app.use('/api/payment', require('./routes/payment'))
 app.use('/api/upload', require('./routes/upload'))
 app.use('/api/admin', require('./routes/admin'))
+app.use('/api/theme', require('./routes/theme'))
 
 // 健康检查
 app.get('/health', (req, res) => {

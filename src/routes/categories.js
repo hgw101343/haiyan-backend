@@ -3,11 +3,15 @@ const router = express.Router();
 const prisma = require("../lib/prisma");
 const { authenticate, isAdmin } = require("../middlewares/auth");
 
-/** GET /api/categories —— 获取所有分类（含菜品数量） */
+/** GET /api/categories —— 获取所有分类（含菜品数量，支持推荐筛选） */
 router.get("/", async (req, res) => {
   try {
+    const { recommended } = req.query;
+    const where = { isActive: true };
+    if (recommended === "true") where.isRecommended = true;
+
     const categories = await prisma.category.findMany({
-      where: { isActive: true },
+      where,
       orderBy: { sort: "asc" },
       include: {
         _count: { select: { dishes: { where: { isActive: true } } } },
@@ -22,13 +26,13 @@ router.get("/", async (req, res) => {
 /** POST /api/categories —— 创建分类（管理员） */
 router.post("/", authenticate, isAdmin, async (req, res) => {
   try {
-    const { name, icon, sort } = req.body;
+    const { name, icon, sort, isRecommended } = req.body;
     if (!name)
       return res
         .status(400)
         .json({ success: false, message: "分类名称不能为空" });
     const category = await prisma.category.create({
-      data: { name, icon, sort: sort || 0 },
+      data: { name, icon, sort: sort || 0, isRecommended: !!isRecommended },
     });
     res.status(201).json({ success: true, data: category });
   } catch (err) {
@@ -73,10 +77,17 @@ router.post("/batch-delete", authenticate, isAdmin, async (req, res) => {
 /** PUT /api/categories/:id —— 更新分类（管理员） */
 router.put("/:id", authenticate, isAdmin, async (req, res) => {
   try {
-    const { name, icon, sort, isActive } = req.body;
+    const { name, icon, sort, isActive, isRecommended } = req.body;
+    const data = {};
+    if (name !== undefined) data.name = name;
+    if (icon !== undefined) data.icon = icon;
+    if (sort !== undefined) data.sort = parseInt(sort);
+    if (isActive !== undefined) data.isActive = !!isActive;
+    if (isRecommended !== undefined) data.isRecommended = !!isRecommended;
+
     const category = await prisma.category.update({
       where: { id: parseInt(req.params.id) },
-      data: { name, icon, sort, isActive },
+      data,
     });
     res.json({ success: true, data: category });
   } catch (err) {

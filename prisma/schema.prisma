@@ -25,14 +25,15 @@ model User {
 }
 
 model Category {
-  id        Int      @id @default(autoincrement())
-  name      String
-  icon      String?
-  sort      Int      @default(0)
-  isActive  Boolean  @default(true) @map("is_active")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  dishes    Dish[]
+  id            Int      @id @default(autoincrement())
+  name          String
+  icon          String?
+  sort          Int      @default(0)
+  isActive      Boolean  @default(true) @map("is_active")
+  isRecommended Boolean  @default(false) @map("is_recommended")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  dishes        Dish[]
 
   @@map("categories")
 }
@@ -74,6 +75,15 @@ model Order {
   items         OrderItem[]
 
   @@map("orders")
+}
+
+model SystemConfig {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("system_configs")
 }
 
 model OrderItem {
