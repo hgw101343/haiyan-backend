@@ -9,10 +9,9 @@ const prisma = new PrismaClient()
 // 初始化 SQLite 配置
 prisma.$connect().then(async () => {
   try {
-    // journal_mode 返回结果，用 $queryRawUnsafe
+    // PRAGMA 语句在 Prisma SQLite 下均返回结果，统一用 $queryRawUnsafe
     await prisma.$queryRawUnsafe('PRAGMA journal_mode=WAL')
-    // busy_timeout 不返回结果，用 $executeRawUnsafe
-    await prisma.$executeRawUnsafe('PRAGMA busy_timeout=5000')
+    await prisma.$queryRawUnsafe('PRAGMA busy_timeout=5000')
     console.log('[prisma] SQLite WAL mode enabled')
   } catch (err) {
     console.warn('[prisma] WAL init warning:', err.message)
