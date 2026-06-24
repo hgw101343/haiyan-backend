@@ -6,9 +6,9 @@ const path = require("path");
 const fs = require("fs");
 
 const uploadDir = path.join(__dirname, "../../uploads");
-const SERVER_URL = process.env.SERVER_URL || "http://1.12.48.57:3000";
+const SERVER_URL = process.env.SERVER_URL || "http://localhost:8888";
 
-/** 把图片 URL 中的 localhost 替换为 SERVER_URL，解决真机访问问题 */
+/** 把图片 URL 中的localhost 替换为 SERVER_URL，解决真机访问问题 */
 function normalizeImageUrl(url) {
   if (!url) return url;
   return url.replace(/http:\/\/localhost:\d+/g, SERVER_URL);
@@ -28,7 +28,7 @@ function normalizeDishImages(dish) {
 function renameImageFile(imageUrl, dishName) {
   if (!imageUrl || !dishName) return imageUrl;
   try {
-    // 从 URL 中提取文件名，例如 http://1.12.48.57:3000/uploads/xxx.jpg → xxx.jpg
+    // 从 URL 中提取文件名，例如 http://localhost:3000/uploads/xxx.jpg → xxx.jpg
     const urlPath = new URL(imageUrl).pathname;
     const oldName = path.basename(urlPath);
     const oldPath = path.join(uploadDir, oldName);

@@ -22,7 +22,7 @@ require("dotenv").config({ path: path.join(__dirname, "../.env") });
 
 const prisma = new PrismaClient();
 const uploadDir = path.join(__dirname, "../uploads");
-const BASE_URL = process.env.SERVER_URL || "http://1.12.48.57:3000";
+const BASE_URL = process.env.SERVER_URL || "http://localhost:3000";
 
 const ALLOWED_EXT = [".jpg", ".jpeg", ".png", ".webp", ".gif"];
 
