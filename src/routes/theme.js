@@ -112,8 +112,9 @@ router.get('/', async (req, res) => {
     // 第4步：数据库无任何配置，返回硬编码默认主题
     res.json({ success: true, data: DEFAULT_THEME })
   } catch (err) {
+    // 表不存在或查询异常时，优雅降级为默认主题
     console.error('[theme] get error:', err)
-    res.status(500).json({ success: false, message: '获取主题失败' })
+    res.json({ success: true, data: DEFAULT_THEME })
   }
 })
 
@@ -162,7 +163,8 @@ router.put('/', authenticate, async (req, res) => {
     res.json({ success: true, data: merged, message: '主题已更新' })
   } catch (err) {
     console.error('[theme] update error:', err)
-    res.status(500).json({ success: false, message: '更新主题失败' })
+    // 表不存在时返回默认主题（优雅降级）
+    res.json({ success: true, data: DEFAULT_THEME, message: '主题更新失败，已使用默认主题' })
   }
 })
 
@@ -193,7 +195,7 @@ router.post('/reset', authenticate, async (req, res) => {
     res.json({ success: true, data: DEFAULT_THEME, message: '主题已重置为默认' })
   } catch (err) {
     console.error('[theme] reset error:', err)
-    res.status(500).json({ success: false, message: '重置主题失败' })
+    res.json({ success: true, data: DEFAULT_THEME, message: '重置失败，已使用默认主题' })
   }
 })
 

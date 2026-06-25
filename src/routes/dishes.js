@@ -151,11 +151,13 @@ router.get("/", async (req, res) => {
       pageSize,
       recommended,
       createdBy,
+      all, // 新增：all=true 时返回所有菜品（不限 isActive）
+      sort, // 排序方式：newest=按创建时间倒序
     } = req.query;
     // 兼容 limit 和 pageSize 两种参数名
     const pageLimit = parseInt(limit || pageSize || 20);
-    // 默认条件：只查在售菜品
-    const where = { isActive: true };
+    // 默认条件：只查在售菜品；all=true 时不过滤 isActive
+    const where = all === 'true' ? {} : { isActive: true };
 
     // 按分类筛选
     if (categoryId) where.categoryId = parseInt(categoryId);
@@ -173,17 +175,22 @@ router.get("/", async (req, res) => {
     // 按创建人过滤（管理员后台传 createdBy=自己的userId 看自己的菜品）
     if (createdBy) where.createdBy = parseInt(createdBy);
 
+    // 排序逻辑：sort=newest 时按创建时间倒序，否则按推荐→销量→创建时间
+    const orderBy = sort === 'newest'
+      ? [{ createdAt: 'desc' }]
+      : [
+          { isRecommended: 'desc' },
+          { sales: 'desc' },
+          { createdAt: 'desc' },
+        ];
+
     // 先查总数用于前端分页计算
     const total = await prisma.dish.count({ where });
+
     const dishes = await prisma.dish.findMany({
       where,
       include: { category: { select: { id: true, name: true } } },
-      // 排序优先级：推荐 → 销量 → 创建时间
-      orderBy: [
-        { isRecommended: "desc" },
-        { sales: "desc" },
-        { createdAt: "desc" },
-      ],
+      orderBy,
       skip: (parseInt(page) - 1) * pageLimit,
       take: pageLimit,
     });
