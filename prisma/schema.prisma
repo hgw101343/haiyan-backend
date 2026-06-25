@@ -11,16 +11,19 @@ datasource db {
 }
 
 model User {
-  id         Int      @id @default(autoincrement())
-  openid     String   @unique
-  nickname   String?
-  avatar     String?
-  phone      String?
+  id           Int      @id @default(autoincrement())
+  openid       String   @unique
+  nickname     String?
+  realName     String?  @map("real_name")
+  avatar       String?
+  phone        String?
   role         String   @default("USER")
   passwordHash String?  @map("password_hash")
   createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
-  orders     Order[]
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  orders       Order[]
+  feedbacks    Feedback[]
+  favorites    Favorite[]
 
   @@map("users")
 }
@@ -32,6 +35,7 @@ model Category {
   sort          Int      @default(0)
   isActive      Boolean  @default(true) @map("is_active")
   isRecommended Boolean  @default(false) @map("is_recommended")
+  createdBy     Int?     @map("created_by")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
   dishes        Dish[]
@@ -40,21 +44,23 @@ model Category {
 }
 
 model Dish {
-  id          Int         @id @default(autoincrement())
-  name        String
-  description String?
-  price       Float
-  image       String?
-  categoryId  Int         @map("category_id")
-  category    Category    @relation(fields: [categoryId], references: [id])
-  stock       Int         @default(999)
-  sales       Int         @default(0)
-  isActive    Boolean     @default(true) @map("is_active")
-  isFeatured     Boolean     @default(false) @map("is_featured")
-  isRecommended   Boolean     @default(false) @map("is_recommended")
-  createdAt      DateTime    @default(now()) @map("created_at")
-  updatedAt   DateTime    @updatedAt @map("updated_at")
-  orderItems  OrderItem[]
+  id            Int         @id @default(autoincrement())
+  name          String
+  description   String?
+  price         Float
+  image         String?
+  categoryId    Int         @map("category_id")
+  category      Category    @relation(fields: [categoryId], references: [id])
+  stock         Int         @default(999)
+  sales         Int         @default(0)
+  isActive      Boolean     @default(true) @map("is_active")
+  isFeatured    Boolean     @default(false) @map("is_featured")
+  isRecommended Boolean     @default(false) @map("is_recommended")
+  createdBy     Int?        @map("created_by")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  orderItems    OrderItem[]
+  favorites     Favorite[]
 
   @@map("dishes")
 }
@@ -98,4 +104,30 @@ model OrderItem {
   remark   String?
 
   @@map("order_items")
+}
+
+// ==================== 意见反馈 ====================
+model Feedback {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  content   String                                         // 反馈文字内容
+  images    String   @default("[]")                        // 图片 URL 数组（JSON 字符串）
+  status    String   @default("UNREAD")                    // UNREAD / READ
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("feedbacks")
+}
+
+// ==================== 菜品收藏 ====================
+model Favorite {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  dishId    Int      @map("dish_id")
+  dish      Dish     @relation(fields: [dishId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, dishId])                               // 同一用户同一菜品只能收藏一次
+  @@map("favorites")
 }

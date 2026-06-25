@@ -1,7 +1,15 @@
-require("dotenv").config();
+const path = require("path");
+const dotenv = require("dotenv");
+
+// 根据 NODE_ENV 加载对应的 .env 文件，默认 development
+const env = process.env.NODE_ENV || "development";
+const envFile = path.resolve(__dirname, "..", `.env.${env}`);
+dotenv.config({ path: envFile });
+// 如果对应文件不存在，dotenv 会静默跳过，再尝试加载 .env（兼容）
+dotenv.config();
+
 const express = require("express");
 const cors = require("cors");
-const path = require("path");
 const http = require("http");
 const { WebSocketServer } = require("ws");
 
@@ -67,6 +75,8 @@ app.use("/api/payment", require("./routes/payment"));
 app.use("/api/upload", require("./routes/upload"));
 app.use("/api/admin", require("./routes/admin"));
 app.use("/api/theme", require("./routes/theme"));
+app.use("/api/feedback", require("./routes/feedback"));
+app.use("/api/favorites", require("./routes/favorites"));
 
 // 健康检查
 app.get("/health", (req, res) => {
